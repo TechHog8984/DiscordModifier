@@ -145,7 +145,8 @@ def f_applyDeveloperToolsPatch():
         last_message = "Successfully applied developer tools patch";
     except Exception as e:
         last_message = f"Failed to apply Developer Tools patch: {e}";
-def f_addToSystemTray(label, click):
+
+def addToSystemTray(label, click):
     global last_message;
     try:
         # new_menu_item = f"menuItems['{label}'] = {{label: '{label}', type: 'normal', click: () => {{{click}}}}}";
@@ -171,10 +172,14 @@ def f_addToSystemTray(label, click):
     except Exception as e:
         last_message = f"Failed to add '{label}' to system tray: {e}";
 
+def f_addDeveloperToolsButtonToSystemTray():
+    f_applyDeveloperToolsPatch();
+    addToSystemTray("Open Developer Tools", "const list = _electron.BrowserWindow.getAllWindows(); if (list && list[0]) list[0].toggleDevTools();");
+
 function_list = [
     f_createCoreBackup, f_restoreCoreBackup, f_decompileCore, f_openCoreDecompiledFolder, f_compileCore,
     f_createAppBackup, f_restoreAppBackup, f_decompileApp, f_openAppDecompiledFolder, f_compileApp,
-    f_applyDeveloperToolsPatch
+    f_applyDeveloperToolsPatch, f_addDeveloperToolsButtonToSystemTray
 ];
 
 def printMessage():
@@ -206,7 +211,7 @@ Your choices are:
     global last_message;
     if last_message:
         print("MESSAGE: " + last_message + "\n");
-    last_message = "";
+    last_message = None;
 
 def loop():
     printMessage();
@@ -219,11 +224,11 @@ def loop():
     printMessage();
     if choice == 0:
         return;
-    elif choice <= len(function_list):
+    elif choice > 0 and choice <= len(function_list) + 1:
         function_list[choice - 1]();
-    elif choice == 10:
-        f_applyDeveloperToolsPatch();
-        f_addToSystemTray("Open Developer Tools", "const list = _electron.BrowserWindow.getAllWindows(); if (list && list[0]) list[0].toggleDevTools();");
+    else:
+        global last_message;
+        last_message = f"Invalid option {choice}";
 
     loop();
 
